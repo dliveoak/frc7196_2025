@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.AlignmentConstants;
 
 import java.io.File;
 import java.util.function.DoubleSupplier;
@@ -111,6 +112,61 @@ public class SwerveSubsystem extends SubsystemBase {
   public Command driveFieldOrientedCommand(Supplier<ChassisSpeeds> velocity) {
     return this.run(() -> {
       swerveDrive.driveFieldOriented(velocity.get());
+    });
+  }
+
+  /*
+   * Command to align the robot to be parallel to the targeted AprilTag
+   * CAUTION: May need to flip the sign of dtheta for correct behavior
+   */
+  public Command alignToTagCommand(VisionSubsystem vision)
+  {
+    return this.run(() -> {
+      boolean isDefault = true; // is the Limelight returning default value?
+      double[] pose = vision.getCameraPose();
+
+      for (double value : pose) {
+          if (value != 0.0) {
+              isDefault = false; // Found a non-zero value, so not default value
+              break; // No need to check further
+          }
+      }
+    
+      if (!isDefault)
+      {
+        double dtheta = pose[4]; // yaw offset (MIGHT NEED A MINUS SIGN AND/OR a +/- 180 degrees)
+        ChassisSpeeds desiredSpeeds = new ChassisSpeeds(0, 0, -AlignmentConstants.kPSwerveAlignTheta * dtheta);
+        driveFieldOriented(desiredSpeeds);
+      }
+    });
+
+  }
+
+  /*
+   * Command to align the robot to be parallel to the targeted AprilTag
+   * CAUTION: May need to flip the sign of dtheta for correct behavior
+   */
+  public Command moveToTagCommand(double yOffset, VisionSubsystem vision) {
+    return this.run(() -> {
+
+      boolean isDefault = true; // is the Limelight returning default value?
+      double[] pose = vision.getCameraPose();
+
+      for (double value : pose) {
+          if (value != 0.0) {
+              isDefault = false; // Found a non-zero value, so not default value
+              break; // No need to check further
+          }
+      }
+
+      if (!isDefault) { // only proceed if limelight not reading default value
+        double dz = pose[2]; // approximate distance to apriltag (in meters)
+        double dx = yOffset - pose[0]; // approximate longitudal distance to target location (in meters) 
+
+        ChassisSpeeds desiredSpeeds = new ChassisSpeeds(-AlignmentConstants.kPSwerveAlignZ * dz, AlignmentConstants.kPSwerveAlignX * dx, 0);
+        driveFieldOriented(desiredSpeeds);
+      }
+
     });
   }
 

@@ -90,4 +90,11 @@ public final class Constants
   public static final class OIConstants {
     public static final double kTriggerButtonThreshold = 0.1;
   }
+
+  // constants for auto-align to apriltag
+  public static final class AlignmentConstants {
+    public static final double kPSwerveAlignX = 0.01;
+    public static final double kPSwerveAlignZ = 0.01;
+    public static final double kPSwerveAlignTheta = 0.01;
+  }
 }
