@@ -170,6 +170,31 @@ public class SwerveSubsystem extends SubsystemBase {
     });
   }
 
+  /*
+   * Command to move the robot so that the vision readings satisfy (tx = txTarget, ty = tyTarget)
+   * This command assumes that the robot orientation is aligned to the scoring position, and doesn't apply corrections to heading
+   * CAUTION: May need to flip the sign of dtx and/or dty for correct behavior
+   */
+  public Command moveToTag2DCommand(double txTarget, double tyTarget, VisionSubsystem vision) {
+    return this.run(() -> {
+      // read values from limelight
+      double[] xya = vision.getXYA();
+      double tx = xya[0];
+      double ty = xya[1];
+      double ta = xya[2];
+      if (ta != 0.0) { // ensure an apriltag is visible
+        // compute offset in tx and ty
+        double dtx = tx - txTarget;
+        double dty = ty - tyTarget;
+
+        // create ChassisSpeeds and drive - might need some minus signs :-)
+        // note that offsets in tx correspond to errors in the y direction because of the swerve coordinate system, and vice versa for ty
+        ChassisSpeeds desiredSpeeds = new ChassisSpeeds(-AlignmentConstants.kPSwerveAlign2Dty * dty, -AlignmentConstants.kPSwerveAlign2Dtx * dtx, 0);
+        driveFieldOriented(desiredSpeeds);
+      }
+    });
+  }
+
   //set the gyro to zero
   public void zeroGyro()
   {

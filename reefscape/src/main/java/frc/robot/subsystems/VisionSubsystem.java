@@ -27,6 +27,14 @@ public class VisionSubsystem {
         SmartDashboard.putNumberArray("LimelightPoseEst", pose);
     }
 
+    public double[] getXYA()
+    {
+        double x = tx.getDouble(0.0);
+        double y = ty.getDouble(0.0);
+        double area = ta.getDouble(0.0);
+        return new double[]{x, y, area};
+    }
+
     public double[] getCameraPose()
     {
         return tPose.getDoubleArray(new double[6]);

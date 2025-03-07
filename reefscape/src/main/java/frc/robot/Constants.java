@@ -96,5 +96,8 @@ public final class Constants
     public static final double kPSwerveAlignX = 0.01;
     public static final double kPSwerveAlignZ = 0.01;
     public static final double kPSwerveAlignTheta = 0.01;
+
+    public static final double kPSwerveAlign2Dtx = 0.01;
+    public static final double kPSwerveAlign2Dty = 0.01;
   }
 }
