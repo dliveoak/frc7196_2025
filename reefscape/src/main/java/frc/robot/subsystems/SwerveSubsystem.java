@@ -103,6 +103,21 @@ public class SwerveSubsystem extends SubsystemBase {
     });
   }
 
+
+  /*
+   * Drive command which takes a raw angle rather than headingX/headingY
+   */
+  public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier angle)
+  {
+    return this.run(() -> {
+      // Make the robot move
+      Translation2d scaledInputs = SwerveMath.scaleTranslation(new Translation2d(translationX.getAsDouble(),
+                                                                                translationY.getAsDouble()), 0.7);
+        
+      driveFieldOriented(swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(), scaledInputs.getY(), angle.getAsDouble(), swerveDrive.getOdometryHeading().getRadians(), swerveDrive.getMaximumChassisVelocity()));
+    });
+  }
+
   /**
    * Drive the robot given a chassis field oriented velocity.
    *
@@ -123,16 +138,12 @@ public class SwerveSubsystem extends SubsystemBase {
   {
     // get target id and angle
     int tid = vision.getID();
-    Double angle = vision.calcTargetAngle(tid);
+    Double angle = vision.calcTargetAngle(tid); // angle in radians
 
     if (angle != null)
     {
-      // may need to change sin <-> cos and/or add minus signs
-      double headingX = Math.sin(angle);
-      double headingY = Math.cos(angle);
-
       // keep translation fixed but rotate to angle of april tag
-      return driveCommand(() -> 0.0, () -> 0.0, () -> headingX, () -> headingY);
+      return driveCommand(() -> 0.0, () -> 0.0, () -> angle * Math.PI / 180);
     }
 
     // if no apriltag is detected, keep the drivetrain stationary
